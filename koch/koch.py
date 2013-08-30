@@ -145,7 +145,7 @@ def main():
 				try:
 					stream = audiogen.sampler.play(audio, blocking=True)
 				except KeyboardInterrupt:
-					# So futher messages don't start with "^C"
+					# So further messages don't start with "^C"
 					print(u"")
 
 	if args.file:
