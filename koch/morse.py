@@ -5,6 +5,7 @@ import audiogen.util
 import itertools
 
 HERTZ = 770
+BANDWIDTH=200
 DEFAULT_WPM = 20
 
 #
@@ -19,6 +20,9 @@ DEFAULT_WPM = 20
 # WPM = (60 / 50) / (ms/DIT)
 # or 
 # s/DIT = 1.2 / WPM
+
+# define bandpass filter to limit morse tone bandwidth
+bpf = audiogen.filters.band_pass(HERTZ, BANDWIDTH)
 
 def wpm(wpm=20, farnsworth_limit=18):
 	'''
@@ -109,12 +113,8 @@ class tone(object):
 		HERTZ = self._saved_frequency
 
 def tone_for(seconds):
-	return audiogen.crop_with_fades(
-		audiogen.tone(HERTZ), 
-		seconds=seconds, 
-		fade_in=2.0/HERTZ, 
-		fade_out=4.0/HERTZ
-	)
+	tone = audiogen.crop(audiogen.util.volume(audiogen.tone(HERTZ), -3), seconds)
+	return tone
 
 def dit():
 	for sample in tone_for(DIT):
@@ -193,7 +193,11 @@ def letter(letter):
 	spaces = [gen() for gen in [inter_symbol] * (len(tones) - 1) + [inter_letter]]
 	# todo: compensate for added space following an inter-word space char
 	gens = [symbol for pair in zip(tones, spaces) for symbol in pair]
-	return itertools.chain(*gens)
+
+	# chain the band pass filter three times to narrow bandwidth
+	return bpf(bpf(bpf(
+		itertools.chain(*gens)
+		)))
 
 def code(text):
 	'''Return a generator for audio samples of the Morse for `text`.'''
