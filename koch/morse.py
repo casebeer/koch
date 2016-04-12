@@ -5,6 +5,7 @@ import audiogen.util
 import itertools
 
 HERTZ = 770
+BANDWIDTH=500
 DEFAULT_WPM = 20
 
 #
@@ -109,12 +110,35 @@ class tone(object):
 		HERTZ = self._saved_frequency
 
 def tone_for(seconds):
-	return audiogen.crop_with_fades(
-		audiogen.tone(HERTZ), 
-		seconds=seconds, 
-		fade_in=2.0/HERTZ, 
-		fade_out=4.0/HERTZ
+	tone = itertools.chain(
+		audiogen.crop(audiogen.util.volume(audiogen.tone(HERTZ), -3), seconds),
+		#audiogen.silence(.1),
+		)
+	return tone
+
+	from audiogen import filters
+	bpf = filters.band_pass(HERTZ, 500)
+	return bpf(bpf(bpf(bpf(bpf(bpf(bpf(bpf(bpf(bpf(bpf(tone)))))))))))
+
+	'''
+	return audiogen.crop(
+		audiogen.multiply(
+			audiogen.tone(HERTZ),
+			audiogen.chain(
+				audiogen.crop(audiogen.tone(1./(4 * RISE_TIME)), RISE_TIME),
+				audiogen.crop(audiogen.tone(1./(4 * RISE_TIME)), RISE_TIME),
+			)
+		},
+		seconds
 	)
+	return audiogen.crop(
+		audiogen.util.multiply(
+			audiogen.tone(HERTZ), 
+			audiogen.tone(1./(2 * seconds))
+		),
+		seconds
+	)
+	'''
 
 def dit():
 	for sample in tone_for(DIT):
@@ -193,7 +217,13 @@ def letter(letter):
 	spaces = [gen() for gen in [inter_symbol] * (len(tones) - 1) + [inter_letter]]
 	# todo: compensate for added space following an inter-word space char
 	gens = [symbol for pair in zip(tones, spaces) for symbol in pair]
-	return itertools.chain(*gens)
+
+	from audiogen import filters
+	bpf = filters.band_pass(HERTZ, BANDWIDTH)
+
+	return bpf(bpf(bpf(bpf(bpf(
+		itertools.chain(*gens)
+		)))))
 
 def code(text):
 	'''Return a generator for audio samples of the Morse for `text`.'''
