@@ -1,7 +1,7 @@
 Koch method Morse code trainer
 ==============================
 
-Command line `Koch method <https://en.wikipedia.org/wiki/Morse_code#Learning_methods>`_ 
+Command line `Koch method <http://www.qsl.net/n1irz/finley.morse.html>`__
 Morse code audio generation and training program.
 
 Implements:
@@ -11,7 +11,7 @@ Implements:
   (defaults to a minimum of 20 WPM characters at any WPM less than 20 WPM)
 - and filters to limit the code's audio bandwith
 - supporting a 
-  `Koch method <http://web.archive.org/web/20130208133414/http://www.codepractice.com/learning.html>`_
+  `Koch method <http://web.archive.org/web/20130208133414/http://www.codepractice.com/learning.html>`__
   CLI training program
 
 Installation
@@ -29,7 +29,7 @@ Install with::
     $ pip install koch
 
 Note that to install the PyAudio dependency on Mac OS X, you'll need to first
-install `portaudio` with Homebrew::
+install ``portaudio`` with Homebrew::
 
     $ brew install portaudio
 
@@ -92,7 +92,7 @@ Get help with CLI options::
 See also
 --------
 
-- `audiogen <https://pypi.python.org/pypi/audiogen>`_ (`Github project <https://github.com/casebeer/audiogen>`_),
+- `audiogen`_ (`Github project <https://github.com/casebeer/audiogen>`_),
   a Python generator-based audio generation and processing library
 
 Version history
