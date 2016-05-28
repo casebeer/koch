@@ -17,7 +17,14 @@ import sys
 # K  M  R  S  U  A  P   T  L  O  W  I  .  N  J  E  F  0   Y  ,  V  G  5  /
 # Q  9  Z  H  3  8  B   ?  4  2  7  C  1  D  6  X  <BT>   <SK>  <AR>
 
+DEFAULT_LENGTH = 10
+# i.e. start with only the letter 'K'
+DEFAULT_TRAINING_CHARACTERS = 1
+DEFAULT_HERTZ = 770
 DEFAULT_BANDWIDTH = 200
+DEFAULT_WPM = 20
+# Farnsworth timings below 20 WPM  (n.b. ARRL cutoff is 18 WPM)
+DEFAULT_FARNSWORTH_CUTOFF = 20
 
 def koch_alphabet(characters=2):
 	# todo: parse alphabet from string, handling prosigns properly
@@ -45,12 +52,12 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-l", "--length",
 		type=int,
-		default=10,
+		default=DEFAULT_LENGTH,
 		help="Length of practise message in characters."
 	)
 	parser.add_argument("-c", "--characters",
 		type=int,
-		default=1,
+		default=DEFAULT_TRAINING_CHARACTERS,
 		help="Number of distinct characters to practise."
 	)
 	parser.add_argument("-i", "--intro",
@@ -71,7 +78,7 @@ def main():
 	)
 	parser.add_argument("-H", "--hertz",
 		type=float,
-		default=770,
+		default=DEFAULT_HERTZ,
 		help="Frequency in Hertz to use for practise tones."
 	)
 	parser.add_argument("-B", "--bandwidth",
@@ -81,7 +88,7 @@ def main():
 	)
 	parser.add_argument("-w", "--wpm",
 		type=float,
-		default=20,
+		default=DEFAULT_WPM,
 		help="Morse words per minute."
 	)
 	parser.add_argument("--cwpm",
@@ -123,14 +130,14 @@ def main():
 		cwpm = args.cwpm
 	else:
 		# Farnsworth timings below 20 WPM  (n.b. ARRL cutoff is 18 WPM)
-		cwpm = max(20, args.wpm)
+		cwpm = max(DEFAULT_FARNSWORTH_CUTOFF, args.wpm)
 
 	if args.intro or args.message:
 		print(message)
 	else:
 		print(u"Testing characters{wpm}:\n{chars}".format(
 			wpm=u" (Farnsworth {}/{})".format(int(args.wpm), cwpm) \
-				if args.wpm < 20 and not args.cwpm else u"",
+				if args.wpm < DEFAULT_FARNSWORTH_CUTOFF and not args.cwpm else u"",
 			chars=u"·".join(alphabet)
 		))
 	
