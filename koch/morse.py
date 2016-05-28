@@ -5,7 +5,7 @@ import audiogen.util
 import itertools
 
 HERTZ = 770
-BANDWIDTH=200
+BANDWIDTH = 200
 DEFAULT_WPM = 20
 
 #
@@ -20,9 +20,6 @@ DEFAULT_WPM = 20
 # WPM = (60 / 50) / (ms/DIT)
 # or 
 # s/DIT = 1.2 / WPM
-
-# define bandpass filter to limit morse tone bandwidth
-bpf = audiogen.filters.band_pass(HERTZ, BANDWIDTH)
 
 def wpm(wpm=20, farnsworth_limit=18):
 	'''
@@ -193,6 +190,9 @@ def letter(letter):
 	spaces = [gen() for gen in [inter_symbol] * (len(tones) - 1) + [inter_letter]]
 	# todo: compensate for added space following an inter-word space char
 	gens = [symbol for pair in zip(tones, spaces) for symbol in pair]
+
+	# define bandpass filter to limit morse tone bandwidth
+	bpf = audiogen.filters.band_pass(HERTZ, BANDWIDTH)
 
 	# chain the band pass filter three times to narrow bandwidth
 	return bpf(bpf(bpf(
