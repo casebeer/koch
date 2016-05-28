@@ -3,6 +3,7 @@ import audiogen
 import audiogen.util
 
 import itertools
+import contextlib
 
 HERTZ = 770
 BANDWIDTH = 200
@@ -108,6 +109,14 @@ class tone(object):
 	def __exit__(self, *args, **kwargs):
 		global HERTZ
 		HERTZ = self._saved_frequency
+
+@contextlib.contextmanager
+def bandwidth(bandwidth):
+	global BANDWIDTH
+	old = BANDWIDTH
+	BANDWIDTH = bandwidth
+	yield
+	BANDWIDTH = old
 
 def tone_for(seconds):
 	tone = audiogen.crop(audiogen.util.volume(audiogen.tone(HERTZ), -3), seconds)

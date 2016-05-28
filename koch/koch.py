@@ -17,6 +17,8 @@ import sys
 # K  M  R  S  U  A  P   T  L  O  W  I  .  N  J  E  F  0   Y  ,  V  G  5  /
 # Q  9  Z  H  3  8  B   ?  4  2  7  C  1  D  6  X  <BT>   <SK>  <AR>
 
+DEFAULT_BANDWIDTH = 200
+
 def koch_alphabet(characters=2):
 	# todo: parse alphabet from string, handling prosigns properly
 	# todo: accept and parse custom alphabet string
@@ -70,7 +72,12 @@ def main():
 	parser.add_argument("-H", "--hertz", 
 		type=float,
 		default=770,
-		help="Frequency in Hertz to use for practise tones." 
+		help="Frequency in Hertz to use for practise tones."
+	)
+	parser.add_argument("-B", "--bandwidth",
+		type=float,
+		default=DEFAULT_BANDWIDTH,
+		help="Audio bandwidth in Hertz, centered on the tone frequency."
 	)
 	parser.add_argument("-w", "--wpm", 
 		type=float,
@@ -132,22 +139,23 @@ def main():
 		
 	with morse.timings(morse.farnsworth(args.wpm, cwpm)):
 		with morse.tone(args.hertz):
-			# todo: determine nesting behavior of context managers
-			audio = morse.code(message)
-			if args.file:
-				with open(args.file, "wb") as f:
-					audiogen.write_wav(f, audio)
-			else:
-				try:
-					if args.forever:
-						audio = itertools.cycle(audio)
-					stream = audiogen.sampler.play(
-						itertools.chain(morse.code(" "), audio, audiogen.beep()),
-						blocking=True
-					)
-				except KeyboardInterrupt:
-					# So further messages don't start with "^C"
-					print(u"")
+			with morse.bandwidth(args.bandwidth):
+				# todo: determine nesting behavior of context managers
+				audio = morse.code(message)
+				if args.file:
+					with open(args.file, "wb") as f:
+						audiogen.write_wav(f, audio)
+				else:
+					try:
+						if args.forever:
+							audio = itertools.cycle(audio)
+						stream = audiogen.sampler.play(
+							itertools.chain(morse.code(" "), audio, audiogen.beep()),
+							blocking=True
+						)
+					except KeyboardInterrupt:
+						# So further messages don't start with "^C"
+						print(u"")
 
 	if not args.intro and not args.message and not args.file:
 		raw_input(u"\nHit <enter> to continue...")
