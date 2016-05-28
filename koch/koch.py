@@ -43,33 +43,33 @@ def main():
 	import argparse
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument("-l", "--length", 
+	parser.add_argument("-l", "--length",
 		type=int,
 		default=10,
 		help="Length of practise message in characters."
 	)
-	parser.add_argument("-c", "--characters", 
+	parser.add_argument("-c", "--characters",
 		type=int,
 		default=1,
-		help="Number of distinct characters to practise." 
+		help="Number of distinct characters to practise."
 	)
 	parser.add_argument("-i", "--intro",
 		action="store_true",
 		default=False,
 		help="Play just the Nth Koch character to introduce it."
 	)
-	parser.add_argument("-a", "--custom-alphabet", 
+	parser.add_argument("-a", "--custom-alphabet",
 		type=str,
 		default=None,
-		help="Custom alphabet to use in place of default Koch ordering." 
+		help="Custom alphabet to use in place of default Koch ordering."
 	)
 	# todo: make saving in lieu of playing?
-	parser.add_argument("-f", "--file", 
+	parser.add_argument("-f", "--file",
 		type=str,
 		default=None,
 		help="Save audio to a WAV file."
 	)
-	parser.add_argument("-H", "--hertz", 
+	parser.add_argument("-H", "--hertz",
 		type=float,
 		default=770,
 		help="Frequency in Hertz to use for practise tones."
@@ -79,19 +79,19 @@ def main():
 		default=DEFAULT_BANDWIDTH,
 		help="Audio bandwidth in Hertz, centered on the tone frequency."
 	)
-	parser.add_argument("-w", "--wpm", 
+	parser.add_argument("-w", "--wpm",
 		type=float,
 		default=20,
 		help="Morse words per minute."
 	)
-	parser.add_argument("--cwpm", 
+	parser.add_argument("--cwpm",
 		type=float,
 		default=None,
 		help="""Morse words per minute used to generate characters.
-		If unset, defaults to WPM when WPM >= 20, or 20 if WPM < 20. 
+		If unset, defaults to WPM when WPM >= 20, or 20 if WPM < 20.
 		"""
 	)
-	parser.add_argument("--forever", 
+	parser.add_argument("--forever",
 		action="store_true",
 		default=False,
 		help="""Loop the message forever (cannot be combined with --file)."""
