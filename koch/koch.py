@@ -89,7 +89,7 @@ def main():
 		default=False,
 		help="""Loop the message forever (cannot be combined with --file)."""
 	)
-	parser.add_argument("message", nargs="?", default=None)
+	parser.add_argument("message", nargs="*", default=None)
 	args = parser.parse_args()
 
 	if args.forever and args.file:
@@ -104,7 +104,7 @@ def main():
 
 	if args.message:
 		# play manually specified message
-		message = args.message.upper()
+		message = u" ".join(args.message).upper()
 	elif args.intro:
 		# play the Nth char length times to teach the char
 		message = alphabet[-1] * args.length
