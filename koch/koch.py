@@ -133,17 +133,18 @@ def main():
 	with morse.timings(morse.farnsworth(args.wpm, cwpm)):
 		with morse.tone(args.hertz):
 			# todo: determine nesting behavior of context managers
-			audio = itertools.chain(
-				morse.code(" "), 
-				morse.code(message) if not args.forever else itertools.cycle(morse.code(message)),
-				audiogen.beep()
-			)
+			audio = morse.code(message)
 			if args.file:
 				with open(args.file, "wb") as f:
 					audiogen.write_wav(f, audio)
 			else:
 				try:
-					stream = audiogen.sampler.play(audio, blocking=True)
+					if args.forever:
+						audio = itertools.cycle(audio)
+					stream = audiogen.sampler.play(
+						itertools.chain(morse.code(" "), audio, audiogen.beep()),
+						blocking=True
+					)
 				except KeyboardInterrupt:
 					# So further messages don't start with "^C"
 					print(u"")
