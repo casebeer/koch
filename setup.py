@@ -12,7 +12,7 @@ with open("README.rst", "rb") as f:
 
 setup(
 	name="koch",
-	version="0.0.2",
+	version="0.0.3",
 	description="Koch method Morse code training program",
 	author="Christopher H. Casebeer",
 	author_email="",
