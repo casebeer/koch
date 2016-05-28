@@ -149,10 +149,7 @@ def main():
 					# So further messages don't start with "^C"
 					print(u"")
 
-	if args.file:
-		audiogen.util.play(args.file)
-
-	if not args.intro and not args.message:
+	if not args.intro and not args.message and not args.file:
 		raw_input(u"\nHit <enter> to continue...")
 		print(u"\n{}".format(message.lower()))
 
