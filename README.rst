@@ -95,6 +95,13 @@ See also
 - `audiogen`_ (`Github project <https://github.com/casebeer/audiogen>`_),
   a Python generator-based audio generation and processing library
 
+Contributing
+------------
+
+Get the source and report any bugs on Github:
+
+    https://github.com/casebeer/koch
+
 Version history
 ---------------
 
