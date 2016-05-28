@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 
 required_modules = [
 	'audiogen',
+	'PyAudio',
 	]
 
 with open("README.rst", "rb") as f:
@@ -11,11 +12,11 @@ with open("README.rst", "rb") as f:
 
 setup(
 	name="koch",
-	version="0.0.1",
+	version="0.0.2",
 	description="Koch method Morse code training program",
 	author="Christopher H. Casebeer",
 	author_email="",
-	url="",
+	url="https://github.com/casebeer/koch",
 
 	packages=find_packages(exclude='tests'),
 	install_requires=required_modules,
@@ -34,6 +35,6 @@ setup(
 		"Environment :: Console",
 		"Topic :: Multimedia :: Sound/Audio",
 		"Topic :: Communications :: Ham Radio",
+		"Programming Language :: Python :: 2.7",
 	]
 )
-

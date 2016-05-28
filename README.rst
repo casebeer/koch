@@ -95,3 +95,8 @@ See also
 - `audiogen <https://pypi.python.org/pypi/audiogen>`_ (`Github project <https://github.com/casebeer/audiogen>`_),
   a Python generator-based audio generation and processing library
 
+Version history
+---------------
+
+- 0.0.2 - Limit code audio bandwidth to 200 Hz using bandpass filters. Improved 
+  file output behavior for easier scripting.
