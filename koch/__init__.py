@@ -1,4 +1,3 @@
 
 from koch import *
-import morse
-
+import koch.morse

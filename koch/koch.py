@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.WARN)
 
 import audiogen
-import morse
+import koch.morse as morse
 
 import itertools
 import random
@@ -125,7 +125,7 @@ def main():
 	else:
 		# play random message of chosen chars and length
 		message = koch(args.length, alphabet)
-	
+
 	if args.cwpm:
 		cwpm = args.cwpm
 	else:
@@ -140,7 +140,7 @@ def main():
 				if args.wpm < DEFAULT_FARNSWORTH_CUTOFF and not args.cwpm else u"",
 			chars=u"·".join(alphabet)
 		))
-	
+
 	if args.forever:
 		print("Hit ctrl-c to exit")
 		
@@ -165,11 +165,10 @@ def main():
 						print(u"")
 
 	if not args.intro and not args.message and not args.file:
-		raw_input(u"\nHit <enter> to continue...")
+		input(u"\nHit <enter> to continue...")
 		print(u"\n{}".format(message.lower()))
 
 	return 0
 
 if __name__ == "__main__":
 	sys.exit(main())
-

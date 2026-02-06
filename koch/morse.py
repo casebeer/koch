@@ -5,6 +5,8 @@ import audiogen.util
 import itertools
 import contextlib
 
+from functools import reduce
+
 HERTZ = 770
 BANDWIDTH = 200
 DEFAULT_WPM = 20
@@ -19,20 +21,20 @@ DEFAULT_WPM = 20
 # WPM determined by P-A-R-I-S, or 50 dit lengths (with spaces)
 # ms/DIT = (60 / 50) / WPM
 # WPM = (60 / 50) / (ms/DIT)
-# or 
+# or
 # s/DIT = 1.2 / WPM
 
 def wpm(wpm=20, farnsworth_limit=18):
 	'''
 	Generate Morse timings for specified WPM
 
-	For WPM values below farnsworth_limit, Farnsworth timing 
+	For WPM values below farnsworth_limit, Farnsworth timing
 	will be used per the ARRL standard. The default farnsworth_limit
 	is 18 WPM. To disable Farnsworth timing entirely, set
 	farnsworth_limit=None.
 	'''
 	return farnsworth(
-		wpm, 
+		wpm,
 		max(farnsworth_limit, wpm) if farnsworth_limit else wpm
 	)
 
@@ -41,7 +43,7 @@ def farnsworth(wpm=20, cwpm=None):
 	Generate Morse timings based on ARRL Farnsworth timing
 
 	This permits optionally specifying a different overall words
-	per minute. The character WPM determines the timings of the 
+	per minute. The character WPM determines the timings of the
 	dits, dahs, and intra-letter spaces; the overall WPM determines
 	the timings of the inter-letter and inter-word spaces.
 	'''
@@ -54,7 +56,7 @@ def farnsworth(wpm=20, cwpm=None):
 	dit = 1.2 / cwpm
 	# see ARRL doc
 	t_a = (60 * cwpm - 37.2 * wpm) / (cwpm * wpm)
-	
+
 	return {
 		"dit": dit,
 		"dah": dit * 3,
@@ -141,7 +143,7 @@ def inter_symbol():
 def inter_letter():
 	for sample in audiogen.silence(INTER_LETTER):
 		yield sample
-	
+
 LETTERS = {
 	"A": (dit, dah),
 	"B": (dah, dit, dit, dit),

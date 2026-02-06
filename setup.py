@@ -7,7 +7,7 @@ required_modules = [
 	'PyAudio',
 	]
 
-with open("README.rst", "rb") as f:
+with open("README.rst", "r", encoding="utf-8") as f:
 	readme = f.read()
 
 setup(
