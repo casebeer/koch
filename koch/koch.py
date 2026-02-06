@@ -49,7 +49,9 @@ def koch(length=20, alphabet=koch_alphabet(2)):
 def main():
 	import argparse
 
-	parser = argparse.ArgumentParser()
+	parser = argparse.ArgumentParser(
+		formatter_class=argparse.ArgumentDefaultsHelpFormatter
+	)
 	parser.add_argument("-l", "--length",
 		type=int,
 		default=DEFAULT_LENGTH,
@@ -94,8 +96,8 @@ def main():
 	parser.add_argument("--cwpm",
 		type=float,
 		default=None,
-		help="""Morse words per minute used to generate characters.
-		If unset, defaults to WPM when WPM >= 20, or 20 if WPM < 20.
+		help=f"""Morse *character* words per minute.
+		If unset, defaults to max({DEFAULT_FARNSWORTH_CUTOFF}, WPM).
 		"""
 	)
 	parser.add_argument("--forever",
