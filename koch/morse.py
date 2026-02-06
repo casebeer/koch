@@ -53,8 +53,8 @@ def farnsworth(wpm=20, cwpm=None):
 	# ensure cwpm is never slower than wpm!
 	cwpm = max(cwpm, wpm)
 
+	# see ARRL doc: Bloom. "A Standard for Morse Timing Using the Farnsworth Technique."
 	dit = 1.2 / cwpm
-	# see ARRL doc
 	t_a = (60 * cwpm - 37.2 * wpm) / (cwpm * wpm)
 
 	return {
