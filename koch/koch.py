@@ -143,26 +143,27 @@ def main():
 
 	if args.forever:
 		print("Hit ctrl-c to exit")
-		
-	with morse.timings(morse.farnsworth(args.wpm, cwpm)):
-		with morse.tone(args.hertz):
-			with morse.bandwidth(args.bandwidth):
-				# todo: determine nesting behavior of context managers
-				audio = morse.code(message)
-				if args.file:
-					with open(args.file, "wb") as f:
-						audiogen.write_wav(f, audio)
-				else:
-					try:
-						if args.forever:
-							audio = itertools.cycle(audio)
-						stream = audiogen.sampler.play(
-							itertools.chain(morse.code(" "), audio, audiogen.beep()),
-							blocking=True
-						)
-					except KeyboardInterrupt:
-						# So further messages don't start with "^C"
-						print(u"")
+
+	with audiogen.sampler.frame_rate(48000):
+		with morse.timings(morse.farnsworth(args.wpm, cwpm)):
+			with morse.tone(args.hertz):
+				with morse.bandwidth(args.bandwidth):
+					# todo: determine nesting behavior of context managers
+					audio = morse.code(message)
+					if args.file:
+						with open(args.file, "wb") as f:
+							audiogen.write_wav(f, audio)
+					else:
+						try:
+							if args.forever:
+								audio = itertools.cycle(itertools.chain(morse.code(" "), audio))
+							stream = audiogen.sampler.play(
+								itertools.chain(morse.code(" "), audio, audiogen.beep()),
+								blocking=True
+							)
+						except KeyboardInterrupt:
+							# So further messages don't start with "^C"
+							print(u"")
 
 	if not args.intro and not args.message and not args.file:
 		input(u"\nHit <enter> to continue...")

@@ -193,31 +193,36 @@ PROSIGNS = [ "BT", "SK", "AR", "BK", "KN", "CL" ]
 for prosign in PROSIGNS:
 	LETTERS[prosign] = reduce(lambda a, b: a + b, [LETTERS[char] for char in prosign])
 
+def inter_symbol_spaces():
+	while True:
+		yield inter_symbol()
+
 @audiogen.sampler.cache_finite_samples
 def letter(letter):
 	'''Return a generator for the audio samples of the Morse for `letter`.'''
 	# todo: decide on behavior when letter not in LETTERS
-	tones = [gen() for gen in LETTERS[letter]]
-	spaces = [gen() for gen in [inter_symbol] * (len(tones) - 1) + [inter_letter]]
+	tones = (gen() for gen in LETTERS[letter])
+
 	# todo: compensate for added space following an inter-word space char
-	gens = [symbol for pair in zip(tones, spaces) for symbol in pair]
+	gens = (symbol for pair in zip(tones, inter_symbol_spaces()) for symbol in pair)
 
-	# define bandpass filter to limit morse tone bandwidth
-	bpf = audiogen.filters.band_pass(HERTZ, BANDWIDTH)
-
-	# chain the band pass filter three times to narrow bandwidth
-	return bpf(bpf(bpf(
-		itertools.chain(*gens)
-		)))
+	return itertools.chain(*gens)
 
 def code(text):
 	'''Return a generator for audio samples of the Morse for `text`.'''
 	# todo: parse prosigns out of text to be encoded
 	# todo: string or list of strings passed?
-	gens = [letter(l) for l in text]
-	return itertools.chain(*gens)
+	gens = (letter(l) for l in text)
+
+	# define bandpass filter to limit morse tone bandwidth
+	bpf = audiogen.filters.band_pass(HERTZ, min(BANDWIDTH, HERTZ))
+
+	# chain the band pass filter three times to increase stopband attenuation
+	return bpf(bpf(bpf(itertools.chain(*gens))))
 
 if __name__ == "__main__":
 	import sys
 	#message = (sys.argv[1] if len(sys.argv) > 1 else "KD2CNQ").upper()
+	import cProfile
+	cProfile.run('code("Now is the time for all good men to come to the aid of their country ".upper() * 10)')
 	pass

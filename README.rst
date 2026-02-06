@@ -106,6 +106,6 @@ Version history
 ---------------
 
 - 0.0.3 - Band pass filter bug fix. Add CLI option to override default 200 Hz 
-band pass filter bandwidth. 
+  band pass filter bandwidth. 
 - 0.0.2 - Limit code audio bandwidth to 200 Hz using bandpass filters. Improved 
   file output behavior for easier scripting.
