@@ -137,11 +137,12 @@ def main():
 	if args.intro or args.message:
 		print(message)
 	else:
-		print(u"Testing characters{wpm}:\n{chars}".format(
-			wpm=u" (Farnsworth {}/{})".format(int(args.wpm), cwpm) \
-				if args.wpm < DEFAULT_FARNSWORTH_CUTOFF and not args.cwpm else u"",
-			chars=u"·".join(alphabet)
-		))
+		if int(args.wpm) == cwpm:
+			wpm_message = f"({int(args.wpm)} WPM)"
+		else:
+			wpm_message = f"({int(args.wpm)} WPM/{cwpm} CWPM)"
+		print(f"Testing characters {wpm_message}:\n{u'·'.join(alphabet)}")
+
 
 	if args.forever:
 		print("Hit ctrl-c to exit")
@@ -168,7 +169,7 @@ def main():
 							print(u"")
 
 	if not args.intro and not args.message and not args.file:
-		input(u"\nHit <enter> to continue...")
+		input(u"\nHit <enter> to see correct transcription...")
 		print(u"\n{}".format(message.lower()))
 
 	return 0
