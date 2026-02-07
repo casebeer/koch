@@ -318,5 +318,5 @@ if __name__ == "__main__":
 	import sys
 	#message = (sys.argv[1] if len(sys.argv) > 1 else "AC2SY").upper()
 	import cProfile
-	cProfile.run('code("Now is the time for all good men to come to the aid of their country ".upper() * 10)')
+	cProfile.run('audiogen.sampler.discard(code("Now is the time for all good men to come to the aid of their country ".upper() * 1, use_bpf=True))')
 	pass
