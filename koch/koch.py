@@ -46,6 +46,10 @@ def koch(length=20, alphabet=koch_alphabet(2)):
 	letters = (random.choice(alphabet) for i in range(length))
 	return u"".join(insert_spaces(letters))
 
+def read_stdin():
+	for line in sys.stdin:
+		for char in line.strip("\n"):
+			yield char.upper()
 def main():
 	import argparse
 
@@ -109,6 +113,11 @@ def main():
 		action="store_true",
 		default=False
 	)
+	parser.add_argument("-s", "--stdin",
+		action="store_true",
+		default=False,
+		help="""Read message from stdin."""
+	)
 	parser.add_argument("message", nargs="*", default=None)
 	args = parser.parse_args()
 
@@ -130,6 +139,9 @@ def main():
 	if args.message:
 		# play manually specified message
 		message = u" ".join(args.message).upper()
+	elif args.stdin:
+		# read message from stdin
+		message = read_stdin()
 	elif args.intro:
 		# play the Nth char length times to teach the char
 		message = alphabet[-1] * args.length
@@ -145,6 +157,8 @@ def main():
 
 	if args.intro or args.message:
 		print(message)
+	elif args.stdin:
+		print("Reading from stdin...")
 	else:
 		if int(args.wpm) == cwpm:
 			wpm_message = f"({int(args.wpm)} WPM)"
@@ -183,7 +197,7 @@ def main():
 							# So further messages don't start with "^C"
 							print(u"")
 
-	if not args.intro and not args.message and not args.file:
+	if not args.intro and not args.message and not args.file and not args.stdin:
 		input(u"\nHit <enter> to see correct transcription...")
 		print(u"\n{}".format(message.lower()))
 
