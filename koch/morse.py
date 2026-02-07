@@ -1,4 +1,7 @@
 
+import logging
+logger = logging.getLogger(__name__)
+
 import audiogen
 import audiogen.util
 
@@ -120,6 +123,7 @@ def bandwidth(bandwidth):
 	yield
 	BANDWIDTH = old
 
+@audiogen.sampler.cache_finite_samples
 def tone_for(seconds):
 	tone = audiogen.crop(audiogen.util.volume(audiogen.tone(HERTZ), -3), seconds)
 	return tone
@@ -193,36 +197,126 @@ PROSIGNS = [ "BT", "SK", "AR", "BK", "KN", "CL" ]
 for prosign in PROSIGNS:
 	LETTERS[prosign] = reduce(lambda a, b: a + b, [LETTERS[char] for char in prosign])
 
-def inter_symbol_spaces():
-	while True:
-		yield inter_symbol()
+'''
+Implement str.join() for generators and lists
 
-@audiogen.sampler.cache_finite_samples
-def letter(letter):
-	'''Return a generator for the audio samples of the Morse for `letter`.'''
-	# todo: decide on behavior when letter not in LETTERS
-	tones = (gen() for gen in LETTERS[letter])
+Interleave output of `joiner_func()` between items of `joined`, without appending a joiner after the
+final item of `joined`.  Equivalent to `joiner.join(joined)`
 
-	# todo: compensate for added space following an inter-word space char
-	gens = (symbol for pair in zip(tones, inter_symbol_spaces()) for symbol in pair)
+`joiner_func` must be a function which emits joiner.
+'''
+def gen_join(joiner_func, joined):
+	items = iter(joined)
 
-	return itertools.chain(*gens)
+	# pull off the first item, if any
+	try:
+		previous_item = next(items)
+	except StopIteration:
+		return
 
-def code(text):
-	'''Return a generator for audio samples of the Morse for `text`.'''
+	# iterate across remaining items, emmiting only the previous item
+	# along with its subsequent space
+	for item in items:
+		yield previous_item
+		yield joiner_func()
+		previous_item = item
+
+	# this is now the final item in the list, so emit it without a trailing space
+	yield previous_item
+
+'''
+Produce printable visualization of sample data, with | for any sound and _ for silence
+Decimate by 1:512 to shorten samples to reasonable lengths for printing in console.
+n.b. We should do a moving average of all samples rather than decimating, but decimating is faster.
+     There may be glitches in the output as a result (e.g. showing silence due to a near-zero-
+     corssing in the middle of non-silence).
+'''
+def visualize_samples(samples):
+	return "".join(['_' if -.01 < sample < .001 else '|' for index, sample in enumerate(samples) if index % 512 == 0])
+
+
+'''Return iterable of sample generator functions for the Morse for `letter`.'''
+def letter_gens(letter):
+	# TODO: decide on behavior when letter not in LETTERS
+	tones = LETTERS[letter]
+
+	# interleave inter-symbol space silences between tones
+	for symbol in gen_join(lambda: inter_symbol, tones):
+		yield symbol
+
+'''
+Yield a sequence of sample generator functions which represents the provided text iterable.
+
+Set suffix_space = True to append an inter-symbol space at the end of the text to allow for
+effective bandpass filtering of terminal clicks.
+'''
+def text_gens(text, suffix_space=False):
+	chars = iter(text)
+	try:
+		previous_char = next(chars)
+	except StopIteration:
+		return
+
+	for char in chars:
+		if previous_char == " ":
+			# special case for inter-word space; don't suffix it with an inter-letter space
+			for gen in letter_gens(previous_char):
+				yield gen
+		else:
+			for gen in letter_gens(previous_char):
+				yield gen
+			# don't prefix an upcoming space with an inter-letter space
+			if char != " ":
+				yield inter_letter
+		previous_char = char
+
+	# never suffix the final char with an inter-letter space
+	for gen in letter_gens(previous_char):
+		yield gen
+	if suffix_space:
+		yield inter_symbol
+
+'''
+Return a generator for audio samples of the Morse for `text`.
+
+n.b. this output is bandwidth limited to remove clicks, but the provided text must end with silence
+     or the filter will not be able to remove the terminal click.
+'''
+def code(text, use_bpf=True):
 	# todo: parse prosigns out of text to be encoded
 	# todo: string or list of strings passed?
-	gens = (letter(l) for l in text)
+
+    # get an interable of generator functions, one per symbol/space
+	gen_funcs = text_gens(text, suffix_space=use_bpf)
+
+	# warning consumes generator
+	#logger.debug(list(gen_funcs))
+
+	logger.debug(f"Timings: DIT:{DIT} DAH:{DAH} INTER_SYMBOL:{INTER_SYMBOL} INTER_LETTER:{INTER_LETTER} INTER_WORD:{INTER_WORD}")
+	logger.debug(f"HERTZ: {HERTZ}, BANDWIDTH:{BANDWIDTH}")
 
 	# define bandpass filter to limit morse tone bandwidth
 	bpf = audiogen.filters.band_pass(HERTZ, min(BANDWIDTH, HERTZ))
 
+	# call each sample generator function; each will produce its own generator
+	# chain together all the samples within each of these generators
+	letter_samples = itertools.chain.from_iterable(gen_func() for gen_func in gen_funcs)
+
+	# Warning: Generating this debug output puts all samples in memory at once
+	#letter_samples = list(letter_samples)
+	#logger.debug(f"{len(letter_samples)} samples:")
+	#logger.debug(visualize_samples(letter_samples))
+
 	# chain the band pass filter three times to increase stopband attenuation
-	return bpf(bpf(bpf(itertools.chain(*gens))))
+	if use_bpf:
+		samples = bpf(bpf(bpf(letter_samples)))
+	else:
+		samples = letter_samples
+	return samples
 
 if __name__ == "__main__":
 	import sys
-	#message = (sys.argv[1] if len(sys.argv) > 1 else "KD2CNQ").upper()
+	#message = (sys.argv[1] if len(sys.argv) > 1 else "AC2SY").upper()
 	import cProfile
 	cProfile.run('code("Now is the time for all good men to come to the aid of their country ".upper() * 10)')
 	pass

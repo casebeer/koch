@@ -2,7 +2,7 @@
 # coding=utf8
 
 import logging
-logging.basicConfig(level=logging.WARN)
+logger = logging.getLogger(__name__)
 
 import audiogen
 import koch.morse as morse
@@ -65,7 +65,7 @@ def main():
 	parser.add_argument("-i", "--intro",
 		action="store_true",
 		default=False,
-		help="Play just the Nth Koch character to introduce it."
+		help="Play just the Nth Koch character to introduce it. Set `N` with the -c flag."
 	)
 	parser.add_argument("-a", "--custom-alphabet",
 		type=str,
@@ -105,8 +105,17 @@ def main():
 		default=False,
 		help="""Loop the message forever (cannot be combined with --file)."""
 	)
+	parser.add_argument("-d", "--debug",
+		action="store_true",
+		default=False
+	)
 	parser.add_argument("message", nargs="*", default=None)
 	args = parser.parse_args()
+
+	if args.debug:
+		logging.basicConfig(level=logging.DEBUG)
+	else:
+		logging.basicConfig(level=logging.WARN)
 
 	if args.forever and args.file:
 		print("Cannot write an infinitely looping audio stream to a file.")
@@ -152,6 +161,12 @@ def main():
 			with morse.tone(args.hertz):
 				with morse.bandwidth(args.bandwidth):
 					# todo: determine nesting behavior of context managers
+
+					if args.debug:
+						# generate audio samples just for visualization, since visualizing consumes
+						# them and they will not be available for audio output
+						logger.debug(morse.visualize_samples(morse.code(message)))
+
 					audio = morse.code(message)
 					if args.file:
 						with open(args.file, "wb") as f:
@@ -159,9 +174,9 @@ def main():
 					else:
 						try:
 							if args.forever:
-								audio = itertools.cycle(itertools.chain(morse.code(" "), audio))
+								audio = itertools.cycle(itertools.chain(audio, morse.code(" ")))
 							stream = audiogen.sampler.play(
-								itertools.chain(morse.code(" "), audio, audiogen.beep()),
+								itertools.chain(audio, morse.code(" "), audiogen.beep()),
 								blocking=True
 							)
 						except KeyboardInterrupt:
