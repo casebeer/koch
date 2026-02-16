@@ -133,6 +133,14 @@ def main() -> int:
         default=False,
     )
     parser.add_argument(
+        "-e",
+        "--echo",
+        action="store_true",
+        default=False,
+        help="Echo message to stdout before/as it's played. "
+             "No effect in test mode (i.e. no message nor stdin set).",
+    )
+    parser.add_argument(
         "-s",
         "--stdin",
         action="store_true",
@@ -175,10 +183,13 @@ def main() -> int:
         # Farnsworth timings below 20 WPM  (n.b. ARRL cutoff is 18 WPM)
         cwpm = max(DEFAULT_FARNSWORTH_CUTOFF, args.wpm)
 
+    echo = False
     if args.intro or args.message:
-        print(message)
+        if args.echo:
+            print(message)
     elif args.stdin:
         print("Reading from stdin...")
+        echo = args.echo
     else:
         if int(args.wpm) == cwpm:
             wpm_message = f"({int(args.wpm)} WPM)"
@@ -190,7 +201,7 @@ def main() -> int:
         print("Hit ctrl-c to exit")
 
     with audiogen.sampler.frame_rate(48000), morse.timings(
-        morse.farnsworth(args.wpm, cwpm)
+        morse.farnsworth(args.wpm, cwpm),
     ), morse.tone(args.hertz), morse.bandwidth(args.bandwidth):
 
         if args.debug:
@@ -198,7 +209,7 @@ def main() -> int:
             # them and they will not be available for audio output
             logger.debug(morse.visualize_samples(morse.code(message)))
 
-        audio = morse.code(message)
+        audio = morse.code(message, echo=echo)
         if args.file:
             with open(args.file, "wb") as f:
                 audiogen.write_wav(f, audio)
@@ -217,6 +228,9 @@ def main() -> int:
     if not args.intro and not args.message and not args.file and not args.stdin:
         input("\nHit <enter> to see correct transcription...")
         print(f"\n{str.lower(str(message))}")
+
+    if echo:
+        print()
 
     return 0
 

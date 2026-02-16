@@ -1,6 +1,7 @@
 import contextlib
 import itertools
 import logging
+import sys
 from collections.abc import Iterable
 from functools import reduce
 
@@ -263,7 +264,7 @@ def letter_gens(letter):
     yield from gen_join(lambda: inter_symbol, tones)
 
 
-def text_to_audio_generators(text, suffix_space=False):
+def text_to_audio_generators(text, suffix_space=False, echo=False):
     """
     Convert text to audio sample generators
 
@@ -272,6 +273,8 @@ def text_to_audio_generators(text, suffix_space=False):
 
     Set suffix_space = True to append an inter-symbol space at the end of the text
     to allow for effective bandpass filtering of terminal clicks.
+
+    Set echo = True to echo each character to stdout as it's played.
     """
     chars = iter(text)
     try:
@@ -281,11 +284,17 @@ def text_to_audio_generators(text, suffix_space=False):
 
     for char in chars:
         if previous_char == " ":
+            if echo:
+                sys.stdout.write(previous_char)
+                sys.stdout.flush()
             # special case for inter-word space; don't suffix it with
             # an inter-letter space
             for gen in letter_gens(previous_char):
                 yield gen
         else:
+            if echo:
+                sys.stdout.write(previous_char)
+                sys.stdout.flush()
             for gen in letter_gens(previous_char):
                 yield gen
             # don't prefix an upcoming space with an inter-letter space
@@ -294,15 +303,20 @@ def text_to_audio_generators(text, suffix_space=False):
         previous_char = char
 
     # never suffix the final char with an inter-letter space
+    if echo:
+        sys.stdout.write(previous_char)
+        sys.stdout.flush()
     for gen in letter_gens(previous_char):
         yield gen
     if suffix_space:
         yield inter_symbol
 
 
-def code(text: Iterable[str], use_bpf: bool = True):
+def code(text: Iterable[str], use_bpf: bool = True, echo: bool = False):
     """
     Return a generator for audio samples of the Morse for `text`.
+
+    Set echo = True to echo each char to stdout as it's played.
 
     n.b. this output is bandwidth limited to remove clicks, but the provided
          text must end with silence or the filter will not be able to remove
@@ -312,7 +326,7 @@ def code(text: Iterable[str], use_bpf: bool = True):
     # TODO: string or list of strings passed?
 
     # get an iterable of generator functions, one per symbol/space
-    gen_funcs = text_to_audio_generators(text, suffix_space=use_bpf)
+    gen_funcs = text_to_audio_generators(text, suffix_space=use_bpf, echo=echo)
 
     # warning consumes generator
     # logger.debug(list(gen_funcs))
