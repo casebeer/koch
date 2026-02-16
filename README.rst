@@ -26,12 +26,13 @@ Requires:
 - `audiogen <https://pypi.python.org/pypi/audiogen>`_
 - `PyAudio <http://people.csail.mit.edu/hubert/pyaudio/>`_ for audio playback (as opposed to file generation)
 
-Tested with Python 2.7.9 on Mac OS X.
+Tested with Python 3.9 on Mac OS X.
 
 Note that to install the PyAudio dependency on Mac OS X, you'll need to first
 install ``portaudio`` with Homebrew::
 
     $ brew install portaudio
+    $ pip install PyAudio
 
 Examples
 --------
